@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<style>
+	table {
+		margin : 30px;
+	}
+</style>
+<script>
+        $(document).ready(function () {
+        	let table = $('<table />').attr('border', '1');
+            // 조회 후 리스트 형식
+            $.ajax({
+                url: 'userInfoSerlvet',
+                type: 'get',
+                dataType: 'json',
+                success: function (result) {
+                	console.log(result);
+                    for (let i = 0; i < result.length; i++) {
+                        let tr = $('<tr />');
+                        let btn = $('<td />').append($('<button />').attr('id','btn').html('수정'));
+						btn.click(updateBtn);
+                        tr.append(
+                            $('<td />').html(result[i].userId),
+                            $('<td />').html(result[i].userName),
+                            $('<td />').html(result[i].userPass),
+                            $('<td />').html(result[i].userPhone),
+                            $('<td />').html(result[i].userGender),
+                            btn
+                        );
+                        table.append(tr);
+                    }
+                    
+                    $('#show').append(table);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            })
+
+            // 등록
+            $('#frm').on('submit', function (e) {
+                e.preventDefault();
+				let frm = document.getElementById('frm');
+				let data = new FormData(frm);
+				for (let k of data.entries()) { //data.entries = key val 값으로 변환
+					console.log(k);
+				}
+                $.ajax({
+                    contentType: false,
+                    processData: false,
+                    url: 'userInsertServlet',
+                    type: 'post',
+                    dataType: 'json',
+                    data: data,
+                    success: function (result) {
+						console.log(result);
+						// Create Table
+						let tr = $('<tr />');
+						let btn = $('<td />').append($('<button />').attr('id','btn').html('수정'));
+						btn.click(updateBtn);
+						tr.append(
+							$('<td />').html(result.id),
+							$('<td />').html(result.name),
+							$('<td />').html(result.pass),
+							$('<td />').html(result.phone),
+							$('<td />').html(result.gender),
+							btn
+						)
+						table.append(tr);
+						$('#show').append(table);
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            });
+            
+            // 수정
+            function updateBtn(e){
+            	console.log($(this));
+            	e.preventDefault();
+				let frm = document.getElementById('frm');
+				let data = new FormData(frm); // key value 값 담겨진다
+            }
+        });
+    </script>
+</head>
+
+<body>
+	<form id='frm' action='userInfoSerlvet' method='post'
+		enctype='multipart/form-data'>
+		<table border="1">
+			<tr>
+				<td>사용ID</td>
+				<td><input type="text" name="id" id="id"></td>
+			</tr>
+			<tr>
+				<td>이름</td>
+				<td><input type="text" name="name" id="name"></td>
+			</tr>
+			<tr>
+				<td>비밀번호</td>
+				<td><input type="text" name="pass" id="pass"></td>
+			</tr>
+			<tr>
+				<td>연락처</td>
+				<td><input type="text" name="phone" id="phone"></td>
+			</tr>
+			<tr>
+				<td>성별</td>
+				<td><input type="radio" name="gender" id="gender" value="남성">남성 <input
+					type="radio" name="gender" id="gender" value="여성">여성</td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="submit" value="등록"> <input
+					type="reset" value="취소"></td>
+			</tr>
+		</table>
+	</form>
+	<div id="show"></div>
+</body>
+
+</html>

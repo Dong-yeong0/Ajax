@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>userInfo.html</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<style>
+	table {
+		margin: 30px;
+	}
+	th {
+		background-color: black;
+		color : white;
+	}
+</style>
+
+<script>
+	$(document).ready(function() {
+		let tbl = $('<table />');
+		tbl.attr('border','1');
+		$.ajax({
+			url: 'userServlet',
+			type : 'get',
+			dataType: 'json',
+			success: function (result) {
+				// Create List Table
+                let $title = $('<tr />')
+                $title.append(
+                    $('<th />').html('회원ID'),
+                    $('<th />').html('이름'),
+                    $('<th />').html('연락처'),
+                    $('<th />').html('성별'),
+                    $('<th />').html('수정'),
+                )
+                tbl.append($title);
+                for(i=0;i<result.length;i++){
+                	let trTag = $('<tr />');
+                    let btn = $('<button />').html('수정');
+                    btn.click(updateBtn);
+					let text = $('<input />').attr('type',"text");
+                    trTag.append(
+                            $('<td />').html(result[i].id),
+                            $('<td />').html(result[i].name),
+                            $('<td />').append(text.attr('value',result[i].phone)),
+                            $('<td />').html(result[i].gender),
+                            $('<td />').append(btn)
+                        );
+                    tbl.append(trTag);
+                    }
+				$('#show').append(tbl);
+			},
+			 error: function (err) {
+                 console.log(err);
+             }
+		})
+		//저장
+		$('#frm').submit(function(e) {
+			e.preventDefault();
+			let frm = document.getElementById('frm');
+            let data = new FormData(frm);
+			console.log(data);
+			$.ajax({
+				contentType: false,
+                processData: false,
+				url : $('#frm').attr('action'),
+				type : 'post',
+				dataType : 'json',
+				data : data,
+				success : function(result) {
+					let trTag = $('<tr />');
+                    let btn = $('<button />').html('수정');
+					let text = $('<input />').attr('type',"text");
+                    trTag.append(
+                            $('<td />').html(result.id),
+                            $('<td />').html(result.name),
+                            $('<td />').append(text.attr('value',result.phone)),
+                            $('<td />').html(result.gender),
+                            $('<td />').append(btn)
+                        );
+                    tbl.append(trTag);
+                    $('#show').append(tbl);
+				},
+				error : function(err) {
+					console.log(err);
+				}
+			});
+		})
+
+
+		//수정
+		function updateBtn(e){
+			let rph = $(this).parent().parent().children().eq(2).children();
+			let ph = $(this).parent().parent().children().eq(2).children().val();
+			let id = $(this).parent().parent().children().eq(0).html();
+			e.preventDefault();
+			e.stopPropagation();
+			$.ajax({
+				url: 'userUpdataServlet',
+				data: 'id='+id+'&phone='+ph,
+				type: 'post',
+				success: function(result){
+					window.alert("수정 완료!")
+					rph.attr('value',result);
+				},
+				error: function(err){
+					console.log(err);
+				}
+			});
+		}
+
+	});
+</script>
+</head>
+<body>
+	<form id="frm" action="userServlet" method='post'
+		enctype="multipart/form-data">
+		<table border="1">
+			<tr>
+				<th>사용ID</th>
+				<td><input type="text" name="id" id="id"></td>
+			</tr>
+			<tr>
+				<th>이름</th>
+				<td><input type="text" name="name" id="name"></td>
+			</tr>
+			<tr>
+				<th>비밀번호</th>
+				<td><input type="text" name="pass" id="pass"></td>
+			</tr>
+			<tr>
+				<th>연락처</th>
+				<td><input type="text" name="phone" id="phone"></td>
+			</tr>
+			<tr>
+				<th>성별</th>
+				<td><input type="radio" name="gender" id="gender" value="남성">남성
+				<input type="radio" name="gender" id="gender" value="남성">여성</td>
+			</tr>
+			<tr>
+				<th colspan="2"><input type="submit" value="등록"> <input
+					type="reset" value="취소"></th>
+			</tr>
+		</table>
+
+		<div id='show'></div>
+	</form>
+</body>
+</html>
